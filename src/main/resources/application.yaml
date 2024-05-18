@@ -1,0 +1,23 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: Kubernetes
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+  #      ddl-auto: create-drop
+
+  datasource:
+    url: jdbc:postgres://localhost:5432/k8s-test
+    username: postgres
+    password: postgrespassword24
+    driverClassName: org.postgresql.Driver
+  sql:
+    init:
+      data-locations: classpath:data_jpa/update-schema.sql, classpath:data_jpa/insert-demo-data.sql
+      mode: always

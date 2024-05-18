@@ -1,0 +1,24 @@
+<p>guests works!</p>
+<!--<mat-nav-list>-->
+<!--  @for (guest of this.guests; track guest) {-->
+<!--    &lt;!&ndash;    <a mat-list-item [href]="'/guests/'+guest.id">{{ guest.name }}</a>&ndash;&gt;-->
+<!--    <span mat-list-item>{{ guest.name }}</span>-->
+<!--  }-->
+<!--</mat-nav-list>-->
+
+@for (guest of this.guests; track guest) {
+  <!--    <a mat-list-item [href]="'/guests/'+guest.id">{{ guest.name }}</a>-->
+  <p mat-list-item>{{ guest.name }}</p>
+}
+
+
+<div>
+  <form [formGroup]="guestForm" (ngSubmit)="onSubmit()">
+    <label for="guest-name">Guest name: </label>
+    <input id="guest-name" type="text" formControlName="name">
+
+    <label for="guest-note">Note: </label>
+    <input id="guest-note" type="text" formControlName="note">
+    <button class="button" type="submit">save</button>
+  </form>
+</div>

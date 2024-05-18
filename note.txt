@@ -1,0 +1,8 @@
+BEGIN TRANSACTION;
+CREATE TABLE "guest" (
+  "id" SERIAL,
+  "name" VARCHAR(250) NOT NULL,
+  "note" TEXT NULL,
+   PRIMARY KEY ("id")
+);
+COMMIT;
