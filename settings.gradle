@@ -1,1 +1,3 @@
 rootProject.name = 'k8s'
+
+include 'src:main:webapp'

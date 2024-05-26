@@ -17,11 +17,6 @@ public class GuestController {
 
     private GuestService guestService;
 
-    @RequestMapping("/")
-    public String welcome() {
-        return "Hi Welcome to k8s demo app";
-    }
-
     @GetMapping("/guests/list")
     public List<GuestTransport> getAllGuests() {
         return guestService.getAll();

@@ -1,0 +1,39 @@
+plugins {
+	id "com.github.node-gradle.node" version "7.0.2"
+}
+
+group = 'com.seyidov'
+version = '0.0.1-SNAPSHOT'
+
+// Angular app Configuration
+node {
+  download = true
+	version = "20.13.1"
+//	npmVersion = "10.7.0"
+//  workDir = file("${project.buildDir}/node")
+//  nodeModulesDir = file("${project.projectDir}")
+//	allowInsecureProtocol = null
+//	npmInstallCommand = "install"
+//	workDir = file("${project.projectDir}/.gradle/nodejs")
+//	npmWorkDir = file("${project.projectDir}/.gradle/npm")
+//	yarnWorkDir = file("${project.projectDir}/.gradle/yarn")
+//	nodeProjectDir = file("${project.projectDir}")
+//	nodeProxySettings = ProxySettings.SMART
+  workDir = file("${rootProject.buildDir}/node")
+  nodeProjectDir  = file("${project.projectDir}")
+}
+
+task clean() {
+  doLast {
+    delete "dist"
+  }
+}
+
+npm_install.enabled = false
+npmInstall.enabled = false
+
+npm_run_build.inputs.dir new File(projectDir, "src")
+npm_run_build.outputs.dir new File(projectDir, "dist")
+
+task build {}
+build.dependsOn npm_run_build

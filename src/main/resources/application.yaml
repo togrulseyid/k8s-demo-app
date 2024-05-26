@@ -13,7 +13,7 @@ spring:
   #      ddl-auto: create-drop
 
   datasource:
-    url: jdbc:postgres://localhost:5432/k8s-test
+    url: jdbc:postgresql://localhost:5432/k8s-test
     username: postgres
     password: postgrespassword24
     driverClassName: org.postgresql.Driver

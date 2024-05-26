@@ -4,10 +4,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
+//@Testcontainers
 class KubernetesApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+//    @Container
+//    @ServiceConnection
+//    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
+
+    @Test
+    void contextLoads() {
+    }
 
 }

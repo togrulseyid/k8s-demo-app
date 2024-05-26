@@ -1,38 +1,203 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.2.5'
-	id 'io.spring.dependency-management' version '1.1.4'
+    id 'java'
+    id 'org.springframework.boot' version '3.2.5'
+    id 'io.spring.dependency-management' version '1.1.4'
 }
+
+//apply plugin: 'war'
 
 group = 'com.seyidov'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '21'
+    sourceCompatibility = '21'
+}
+
+ext {
+    set('testcontainers.version', "1.19.8")
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
+//task deleteStaticFolder(type: Delete){
+//	def dirName = "src/main/resources/static"
+//	file( dirName ).list().each{
+//		f ->
+//			delete "${dirName}/${f}"
+//	}
+//}
+//
+//processResources.dependsOn('src:main:webapp:build')
+
+
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
-	runtimeOnly 'org.postgresql:postgresql'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
+//	implementation project(':src:main:webapp')
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+    runtimeOnly 'org.postgresql:postgresql'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
+////
+////
+////task buildWebapp(type: Exec) {
+////	if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+////		print("Qaqa basladim")
+////		commandLine 'cmd', '/c', 'cd src/main/webapp && npm run-script build && xcopy build\\* ..\\resources\\static\\ /Y /E '
+////	} else {
+////		commandLine 'sh', '-c', 'cd src/main/webapp && npm run-script build && cp -r build/* ../resources/static/'
+////	}
+////}
+////
+////build.dependsOn buildWebapp
+////bootJar.dependsOn buildWebapp
+//// Angular configuration
+//project('src:main:webapp') {
+//	node {
+//		version = '20.13.1' // Node.js version
+//		npmVersion = '10.7.0' // npm version
+//		download = false
+//	}
+//	tasks.withType(NpmTask) {
+//		args = ['install']
+//	}
+//	task buildAngular(type: NpmTask) {
+//		dependsOn tasks.named('npmInstall')
+//		args = ['run', 'build']
+//	}
+//	bootWar.dependsOn(buildAngular) // Include Angular build in Spring Boot's build process
+//}
+
+//
+//jar {
+//	from('src/main/webapp/dist') {
+//		//Public is a default supported Spring Boot resources directory.
+//		into 'public'
+//	}
+//}
+//
+////frontend:build will be run before the processResources
+//processResources.dependsOn('src:main:webapp:build')
+//
+//
+//task deleteStaticFolder(type: Delete) {
+//    def dirName = "src/main/resources/static"
+//    file(dirName).eachFile {
+//        f ->
+//            delete "${dirName}/${f}"
+//    }
+//}
+//
+//task copyAngularToStaticFolder(type: Copy) {
+//    def angularDir = "src/main/webapp/dist"
+//    def staticFolderDir = "src/main/resources/static"
+//    file(angularDir).eachFile {
+//        f ->
+//            copy { "${staticFolderDir}/${f}" }
+//    }
+//
+//}
+//processResources.dependsOn('src:main:webapp:build')
+
+
+def webappDir = "$projectDir/src/main/webapp"
+//sourceSets {
+//    main {
+//        resources {
+//            srcDirs = ["$webappDir/dist", "$projectDir/src/main/resources"]
+//        }
+//    }
+//}
+
+
+task installAngular(type: Exec) {
+    workingDir "$webappDir"
+    inputs.dir "$webappDir"
+    group = BasePlugin.BUILD_GROUP
+    if (System.getProperty("os.name").toUpperCase().contains("WINDOWS")) {
+        commandLine "npm.cmd", "install"
+    } else {
+        commandLine "npm", "install"
+    }
+}
+
+task buildAngular(type: Exec) {
+    // installAngular should be run prior to this task
+    dependsOn "installAngular"
+    workingDir "$webappDir"
+    inputs.dir "$webappDir"
+    // Add task to the standard build group
+    group = BasePlugin.BUILD_GROUP
+    // ng doesn't exist as a file in windows -> ng.cmd
+    if (System.getProperty("os.name").toUpperCase().contains("WINDOWS")) {
+        commandLine "ng.cmd", "build"
+    } else {
+        commandLine "ng", "build"
+    }
+}
+
+processResources {
+    dependsOn "buildAngular"
+}
+
+task copyWebApp(type: Copy) {
+    from("$webappDir/dist/k8s-client/browser") {
+        include '**/*'
+    }
+    into 'build/resources/main/static'
+
+    includeEmptyDirs = false
+}
+
+copyWebApp.dependsOn ':src:main:webapp:build'
+
+
+jar.dependsOn copyWebApp
+resolveMainClassName.dependsOn copyWebApp
+compileTestJava.dependsOn copyWebApp
+build.dependsOn copyWebApp
+
+bootJar {
+//    archivesBaseName = 'webapp-tutorial'
+    dependsOn copyWebApp
+}
+
+//task runWebAppLive(type: Exec) {
+//    // installAngular should be run prior to this task
+//    dependsOn "installAngular"
+//    workingDir "$webappDir"
+//    inputs.dir "$webappDir"
+//    // Add task to the standard build group
+//    group = BasePlugin.BUILD_GROUP
+//    // ng doesn't exist as a file in windows -> ng.cmd
+//    if (System.getProperty("os.name").toUpperCase().contains("WINDOWS")) {
+//        commandLine "ng.cmd", "serve", " --open"
+//    } else {
+//        commandLine "ng", "serve", " --open"
+//    }
+//}
+//
+//bootRun {
+//    dependOn runWebAppLive
+//}
