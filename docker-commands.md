@@ -9,7 +9,7 @@ docker exec -it docxker_container_id /bin/sh
 
 ###### Docker id
 
-```shell
+```bash 
 docker ps
 ```
 
@@ -29,7 +29,7 @@ docker network create mongo-network
 
 ##### Drop network
 
-```shell
+```bash 
 docker run --rm -it --network mongo-network busybox
 ```
 
@@ -85,13 +85,13 @@ docker build -t k8s:1.0 .
 
 ## Run Docker Compose
 
-```shell
+```bash 
 docker-compose -f mongo.yaml up
 ```
 
 ### Run from Docker file
 
-```shell
+```bash 
 docker build -t my-app:1.0 .
 docker rmi image_id   #docker images need to be removed before building
 docker run -p 8080:8085 -d  --name my-app --network k8s-demo-app_k8s-spring-network my-app:1.0
@@ -99,7 +99,7 @@ docker run -p 8080:8085 -d  --name my-app --network k8s-demo-app_k8s-spring-netw
 
 ## Docker push image
 
-```shell
+```bash 
 docker login
 docker tag my-app:1.1 repo.com/registry...../my-app:1.1
 docker push repo.com/registry...../my-app:1.1
