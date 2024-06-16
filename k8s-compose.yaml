@@ -3,25 +3,26 @@ services:
   spring-app:
     build: .
     restart: always
+    # if the port is not the same then spring and angular can not talk
     ports:
-      - "8080:8085"
+      - "8085:8085"
     links:
       - postgres-db
     networks:
       - k8s-spring-network
     environment:
       - spring.datasource.url=jdbc:postgresql://host.docker.internal:5432/k8s-test
-#      - spring.datasource.url=jdbc:postgresql://localhost:5432/k8s-test
+      #      - spring.datasource.url=jdbc:postgresql://localhost:5432/k8s-test
       - spring.datasource.username=postgres
       - spring.datasource.password=postgrespassword24
       - driverClassName=org.postgresql.Driver
     depends_on:
       - postgres-db
-#    volumes:
-#      - .m2:/root/.m2
+  #    volumes:
+  #      - .m2:/root/.m2
 
   postgres-db:
-#    container_name: postgres_k8s_container
+    #    container_name: postgres_k8s_container
     image: postgres
     environment:
       POSTGRES_DB: k8s-test
@@ -37,7 +38,6 @@ services:
     networks:
       - k8s-spring-network
     restart: unless-stopped
-
 
 networks:
   k8s-spring-network:
