@@ -1,0 +1,47 @@
+version: "3.7"
+services:
+  spring-app:
+    build: .
+    restart: always
+    ports:
+      - "8080:8085"
+    links:
+      - postgres-db
+    networks:
+      - k8s-spring-network
+    environment:
+      - spring.datasource.url=jdbc:postgresql://host.docker.internal:5432/k8s-test
+#      - spring.datasource.url=jdbc:postgresql://localhost:5432/k8s-test
+      - spring.datasource.username=postgres
+      - spring.datasource.password=postgrespassword24
+      - driverClassName=org.postgresql.Driver
+    depends_on:
+      - postgres-db
+#    volumes:
+#      - .m2:/root/.m2
+
+  postgres-db:
+#    container_name: postgres_k8s_container
+    image: postgres
+    environment:
+      POSTGRES_DB: k8s-test
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword24}
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    expose:
+      - 5432
+    networks:
+      - k8s-spring-network
+    restart: unless-stopped
+
+
+networks:
+  k8s-spring-network:
+    driver: bridge
+
+volumes:
+  postgres:

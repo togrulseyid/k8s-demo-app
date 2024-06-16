@@ -1,34 +1,45 @@
-#FROM ubuntu:latest
-#LABEL authors="togru"
+ARG NODE_VERSION=20
+ARG GRADLE_VERSION=8.7.0
+
 #
-#ENTRYPOINT ["top", "-b"]
-
-FROM openjdk:17
-ENV POSTGRES_DB_USERNAME=x \
-        POSTGRES_DB_PWD=x
-#VOLUME /tmp
-#EXPOSE 8085
-#ARG JAR_FILE=target/spring-demo-0.0.1-SNAPSHOT.jar
-#ADD ${JAR_FILE} app.jar
-#ENTRYPOINT ["java","-jar","/app.jar"]
-
-RUN mkdir -p /home/app
-
-COPY * /home/app
-
-# set default dir so that next commands executes in /home/app dir
-WORKDIR /home/app
-
-RUN 
-
-# NANA
-#FROM node:13-alpine
+# Node
 #
-#COPY package*.json /usr/app/
-#COPY app/* /usr/app/
+FROM node:${NODE_VERSION}-alpine AS node
+RUN apk add --no-cache bash
+RUN node --version
+RUN npm --version
+CMD ["bash"]
+
+
+#FROM node:${NODE_VERSION}-alpine AS node
+##WORKDIR /app
+#COPY . .
+#RUN npm install && \
+#    npm run build
+#FROM nginx:alpine
+#COPY --from=builder /app/dist/* /usr/share/nginx/html/
+
+
 #
-#WORKDIR /usr/app
+# Build
 #
-#RUN npm install
-#CMD ["node", "server.js"]
+FROM gradle:${GRADLE_VERSION}-jdk-21-and-22-alpine AS build
+COPY --chown=gradle:gradle . /home/app/src
+WORKDIR /home/app/src
+CMD ["./gradlew", "build", "--no-daemon"]
+
+
 #
+# Package stage
+#
+FROM eclipse-temurin:21-alpine
+COPY --from=build /home/app/src/build/libs/*.jar /app/k8s-app.jar
+EXPOSE 8080
+ENV SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/k8s-test
+CMD ["java", "-jar", "/app/k8s-app.jar"]
+#ENTRYPOINT ["java", "-jar","/app/k8s-app.jar"]
+
+# docker build -t my-app:1.0 .
+# docker rmi image_id   #docker images
+# docker run -p 8085:8085 -d  --name my-app --network k8s-demo-app_k8s-spring-network my-app:1.0
+
